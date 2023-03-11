@@ -13,17 +13,20 @@ ALLOWED_HOSTS = [
     'testserver',
 ]
 
+# fmt: off
 INSTALLED_APPS = [
     'about.apps.AboutConfig',
     'core.apps.CoreConfig',
     'posts.apps.PostsConfig',
     'users.apps.UsersConfig',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'sorl.thumbnail',
 ]
 
@@ -115,5 +118,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
+    },
 }

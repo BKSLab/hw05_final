@@ -12,11 +12,11 @@ NUMBER_TEST_POSTS = 13
 
 class PaginatorViewsTest(TestCase):
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.posts = mixer.cycle(NUMBER_TEST_POSTS).blend(
             'posts.Post',
-            author=mixer.blend(User, username='kir'),
-            group=mixer.blend('posts.Group', slug='test-slug-page'),
+            author=mixer.blend(User),
+            group=mixer.blend('posts.Group'),
         )
         for post in cls.posts:
             cls.reverse_names_paginate = {
@@ -30,8 +30,9 @@ class PaginatorViewsTest(TestCase):
         cls.authorized_client = Client()
 
     def test_first_and_second_pages_paginate(self):
-        """
-        Постраничный вывод постов на главной странице, странице группы
+        """Постраничный вывод постов.
+
+        На главной странице, странице группы
         и на странице профиля.
         """
         for reverse_name in self.reverse_names_paginate:

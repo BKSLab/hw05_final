@@ -16,7 +16,7 @@ class Group(models.Model):
         verbose_name_plural = 'группы'
 
     def __str__(self) -> str:
-        return self.title[: settings.SHOW_WORDS]
+        return self.title[: settings.SHOW_WORDS]  # fmt: skip
 
 
 class Post(models.Model):
@@ -37,7 +37,7 @@ class Post(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='группа',
     )
-    image = models.ImageField('Картинка', upload_to='posts/', blank=True)
+    image = models.ImageField('картинка', upload_to='posts/', blank=True)
 
     class Meta:
         verbose_name = 'пост'
@@ -46,10 +46,10 @@ class Post(models.Model):
         default_related_name = 'posts'
 
     def __str__(self) -> str:
-        return self.text[: settings.SHOW_WORDS]
+        return self.text[:settings.SHOW_WORDS]  # fmt: skip
 
     def get_absolute_url(self) -> str:
-        return reverse("posts:post_detail", kwargs={"pk": self.pk})
+        return reverse('posts:post_detail', kwargs={'pk': self.pk})
 
 
 class Comment(models.Model):
@@ -75,7 +75,7 @@ class Comment(models.Model):
         default_related_name = 'comments'
 
     def __str__(self) -> str:
-        return self.text[: settings.SHOW_WORDS]
+        return self.text[:settings.SHOW_WORDS]  # fmt: skip
 
 
 class Follow(models.Model):
@@ -91,3 +91,10 @@ class Follow(models.Model):
         verbose_name='автор поста',
         related_name='following',
     )
+
+    class Meta:
+        verbose_name = 'подписчик'
+        verbose_name_plural = 'подписчики'
+
+    def __str__(self) -> str:
+        return self.user.get_username()[:settings.SHOW_WORDS]  # fmt: skip
