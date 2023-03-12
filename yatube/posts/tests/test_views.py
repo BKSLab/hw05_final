@@ -11,14 +11,14 @@ from posts.models import Follow, Post
 from posts.tests.common import image
 
 User = get_user_model()
-fake = Faker()
+faker = Faker()
 
 
 class PostPagesTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.user_author = mixer.blend(User)
-        cls.group = mixer.blend('posts.Group', description=fake.text())
+        cls.group = mixer.blend('posts.Group', description=faker.text())
         cls.post = mixer.blend(
             'posts.Post',
             author=cls.user_author,
@@ -27,17 +27,21 @@ class PostPagesTests(TestCase):
         cls.templates_pages_names = {
             reverse('posts:post_create'): 'posts/create_post.html',
             reverse(
-                'posts:post_edit', kwargs={'pk': cls.post.pk}
+                'posts:post_edit',
+                kwargs={'pk': cls.post.pk},
             ): 'posts/create_post.html',
             reverse(
-                'posts:page_post', kwargs={'slug': cls.group.slug}
+                'posts:page_post',
+                kwargs={'slug': cls.group.slug},
             ): 'posts/group_list.html',
             reverse('posts:h_page'): 'posts/index.html',
             reverse(
-                'posts:post_detail', kwargs={'pk': cls.post.pk}
+                'posts:post_detail',
+                kwargs={'pk': cls.post.pk},
             ): 'posts/post_detail.html',
             reverse(
-                'posts:profile', kwargs={'username': cls.user_author}
+                'posts:profile',
+                kwargs={'username': cls.user_author},
             ): 'posts/profile.html',
         }
         cls.authorized_client = Client()
@@ -60,7 +64,7 @@ class PostPagesTests(TestCase):
         self.assertEqual(first_object.group, self.post.group)
 
     def test_group_list_page_correct_contecst(self):
-        """В шаблон group_list.html передается правильный контекст"""
+        """В шаблон group_list.html передается правильный контекст."""
         response = self.authorized_client.get(
             reverse('posts:page_post', kwargs={'slug': self.group.slug})
         )
@@ -144,7 +148,7 @@ class GroupPostPagesTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.author_from_group = mixer.blend(User)
-        cls.group = mixer.blend('posts.Group', description=fake.text())
+        cls.group = mixer.blend('posts.Group', description=faker.text())
         cls.post = mixer.blend(
             'posts.Post',
             author=cls.author_from_group,
@@ -239,9 +243,9 @@ class FollowingViewsTest(TestCase):
         self.assertTrue(
             not [
                 *self.authorized_client.get(
-                    reverse('posts:follow_index')
+                    reverse('posts:follow_index'),
                 ).context.get('page_obj')
-            ]
+            ],
         )
 
 

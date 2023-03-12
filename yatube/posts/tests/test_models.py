@@ -54,5 +54,5 @@ class FollowModelTest(TestCase):
         """Проверяем, что у модели Follow корректно работает __str__."""
         self.assertEqual(
             self.subscription.__str__(),
-            self.subscription.user.get_username()[:settings.SHOW_CHARACTERS],
+            self.subscription.user.get_username()[: settings.SHOW_CHARACTERS],
         )

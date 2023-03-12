@@ -10,14 +10,14 @@ class CreationForm(UserCreationForm):
         fields = ('first_name', 'last_name', 'username', 'email')
 
         labels = {
-            'first_name': ('имя'),
-            'last_name': ('Фамилия'),
-            'username': ('имя пользователя'),
-            'email': ('почта'),
+            'first_name': 'имя',
+            'last_name': 'Фамилия',
+            'username': 'логин',
+            'email': 'почта',
         }
         help_texts = {
-            'first_name': ('введите ваше имя'),
-            'last_name': ('введите вашу фамилию'),
-            'username': ('уникальное имя пользователя'),
-            'email': ('адрес электронной почты'),
+            'first_name': 'введите ваше имя',
+            'last_name': 'введите вашу фамилию',
+            'username': 'уникальное имя пользователя',
+            'email': 'адрес электронной почты',
         }

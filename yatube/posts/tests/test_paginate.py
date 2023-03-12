@@ -41,7 +41,7 @@ class PaginatorViewsTest(TestCase):
                     len(
                         self.authorized_client.get(reverse_name).context[
                             'page_obj'
-                        ]
+                        ],
                     ),
                     settings.OBJECTS_PER_PAGE,
                 )

@@ -13,7 +13,7 @@ from posts.models import Comment, Follow, Post
 from posts.tests.common import image
 
 User = get_user_model()
-fake = Faker()
+faker = Faker()
 
 
 class PostFormTests(TestCase):
@@ -26,7 +26,7 @@ class PostFormTests(TestCase):
     def test_create_post_form(self):
         """Валидная форма создает запись в Post."""
         group = mixer.blend('posts.Group')
-        data = {'text': fake.text(), 'group': group.pk, 'image': image()}
+        data = {'text': faker.text(), 'group': group.pk, 'image': image()}
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=data,
@@ -44,12 +44,12 @@ class PostFormTests(TestCase):
         group = mixer.blend('posts.Group')
         post = Post.objects.create(
             author=self.user_author,
-            text=fake.text(),
+            text=faker.text(),
             group=group,
         )
         group_two = mixer.blend('posts.Group')
         data = {
-            'text': fake.text(),
+            'text': faker.text(),
             'group': group_two.pk,
         }
         response = self.authorized_client.post(
@@ -68,7 +68,7 @@ class PostFormTests(TestCase):
     def test_create_post_by_unauthorized_user(self):
         """Неавторизованный пользователь не может создать пост."""
         data = {
-            'text': fake.text(),
+            'text': faker.text(),
         }
         response = self.client.post(
             reverse('posts:post_create'),
@@ -76,7 +76,8 @@ class PostFormTests(TestCase):
             follow=True,
         )
         self.assertRedirects(
-            response, redirect_to_login(reverse('posts:post_create')).url
+            response,
+            redirect_to_login(reverse('posts:post_create')).url,
         )
         self.assertFalse(Post.objects.filter(text=data['text']))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -88,7 +89,7 @@ class PostFormTests(TestCase):
             author=self.user_author,
         )
         data = {
-            'text': fake.text(),
+            'text': faker.text(),
         }
         response = self.client.post(
             reverse('posts:post_edit', kwargs={'pk': post.pk}),
@@ -111,7 +112,7 @@ class PostFormTests(TestCase):
         )
         data = {
             'author': mixer.blend(User),
-            'text': fake.text(),
+            'text': faker.text(),
         }
         response = self.authorized_client.post(
             reverse('posts:post_edit', kwargs={'pk': post.pk}),
@@ -126,7 +127,7 @@ class PostFormTests(TestCase):
         """Неавторизованный пользователь не может оставлять комментарии."""
         post = mixer.blend('posts.Post')
         data = {
-            'text': fake.text(),
+            'text': faker.text(),
         }
 
         response = self.client.post(
@@ -144,7 +145,7 @@ class PostFormTests(TestCase):
         request.user = AnonymousUser()
         request.session = {}
         data = {
-            'text': fake.text(),
+            'text': faker.text(),
         }
         response = client.post(
             reverse('posts:add_comment', kwargs={'pk': post.pk}),
@@ -158,8 +159,7 @@ class PostFormTests(TestCase):
         """После добавления комментария, он появляется на странице поста."""
         post = mixer.blend('posts.Post')
         data = {
-            'text': fake.text(),
-            'author': self.user_author,
+            'text': faker.text(),
         }
         response = self.authorized_client.post(
             reverse('posts:add_comment', kwargs={'pk': post.pk}),
@@ -212,7 +212,7 @@ class FollowingTest(TestCase):
                 kwargs={'username': self.author_following},
             ),
         )
-        subscription = Follow.objects.get(
+        Follow.objects.get(
             user=self.authorized_follower,
             author=self.author_following,
         )
@@ -222,20 +222,19 @@ class FollowingTest(TestCase):
                 kwargs={'username': self.author_following},
             ),
         )
-        self.assertNotEqual(
-            Follow.objects.get(
+        self.assertEqual(
+            Follow.objects.filter(
                 user=self.authorized_follower,
                 author=self.author_following,
-            ).pk,
-            subscription.pk + 1,
+            ).count(),
+            1,
         )
 
     def test_anonymous_user_cannot_follow_author(self):
         """Анонимный пользователь не может подписаться на автора."""
-        client = Client()
         request.user = AnonymousUser()
         request.session = {}
-        client.get(
+        self.client.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.author_following},
@@ -251,7 +250,7 @@ class FollowingTest(TestCase):
     def test_user_cannot_subscribe_to_anonymous(self):
         """Пользователь не может подписаться на анонима."""
         data = {
-            'text': fake.text,
+            'text': faker.text,
         }
         self.client.post(
             reverse('posts:post_create'),

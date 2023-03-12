@@ -1,8 +1,6 @@
-from typing import Any
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 
 from posts.forms import CommentForm, PostForm
@@ -12,20 +10,20 @@ from yatube.utils import paginate
 User = get_user_model()
 
 
-def index(request: object) -> Post:
+def index(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         'posts/index.html',
         {
             'page_obj': paginate(
                 request,
-                Post.objects.all(),
+                Post.objects.select_related('author', 'group').all(),
             ),
         },
     )
 
 
-def group_posts(request: object, slug: str) -> HttpResponse:
+def group_posts(request: HttpRequest, slug: str) -> HttpResponse:
     group = get_object_or_404(Group, slug=slug)
     return render(
         request,
@@ -40,7 +38,7 @@ def group_posts(request: object, slug: str) -> HttpResponse:
     )
 
 
-def profile(request: Any, username: Any) -> Any:
+def profile(request: HttpRequest, username: str) -> HttpResponse:
     user_author = get_object_or_404(User, username=username)
     following = (
         request.user.is_authenticated
@@ -55,7 +53,7 @@ def profile(request: Any, username: Any) -> Any:
         {
             'page_obj': paginate(
                 request,
-                user_author.posts.all(),
+                user_author.posts.select_related('group').all(),
             ),
             'user_name': user_author,
             'following': following,
@@ -63,7 +61,7 @@ def profile(request: Any, username: Any) -> Any:
     )
 
 
-def post_detail(request: Any, pk: Any) -> Any:
+def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
     return render(
         request,
         'posts/post_detail.html',
@@ -75,7 +73,7 @@ def post_detail(request: Any, pk: Any) -> Any:
 
 
 @login_required
-def post_create(request: Any):
+def post_create(request: HttpRequest) -> HttpResponse:
     form = PostForm(request.POST or None, files=request.FILES or None)
     if not form.is_valid():
         return render(
@@ -91,7 +89,7 @@ def post_create(request: Any):
 
 
 @login_required
-def post_edit(request: Any, pk: Any):
+def post_edit(request: HttpRequest, pk: int) -> HttpResponse:
     post = get_object_or_404(Post, pk=pk)
     form = PostForm(
         request.POST or None,
@@ -115,26 +113,25 @@ def post_edit(request: Any, pk: Any):
 
 
 @login_required
-def add_comment(request, pk):
+def add_comment(request: HttpRequest, pk: int) -> HttpResponseRedirect:
     post = get_object_or_404(Post, pk=pk)
     form = CommentForm(request.POST or None)
     if form.is_valid():
-        comment = form.save(commit=False)
-        comment.author = request.user
-        comment.post = post
-        comment.save()
+        form.instance.author = request.user
+        form.instance.post = post
+        form.save()
     return redirect('posts:post_detail', pk)
 
 
 @login_required
-def follow_index(request):
+def follow_index(request: HttpRequest) -> HttpResponse:
     page = paginate(
         request,
-        Post.objects.filter(
-            author__in=Follow.objects.filter(
-                user_id=request.user.id,
-            ).values('author_id')
-        ).select_related('author'),
+        Post.objects.select_related(
+            'author',
+        ).filter(
+            author__following__user=request.user,
+        ),
     )
     return render(
         request,
@@ -146,7 +143,9 @@ def follow_index(request):
 
 
 @login_required
-def profile_follow(request: Any, username: Any):
+def profile_follow(
+    request: HttpRequest, username: str
+) -> HttpResponseRedirect:
     author_for_follow = get_object_or_404(User, username=username)
     if author_for_follow != request.user:
         Follow.objects.get_or_create(
@@ -156,8 +155,12 @@ def profile_follow(request: Any, username: Any):
 
 
 @login_required
-def profile_unfollow(request, username):
+def profile_unfollow(
+    request: HttpRequest, username: str
+) -> HttpResponseRedirect:
     get_object_or_404(
-        Follow, user=request.user, author__username=username
+        Follow,
+        user=request.user,
+        author__username=username,
     ).delete()
     return redirect('posts:follow_index')

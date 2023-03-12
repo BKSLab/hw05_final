@@ -16,12 +16,11 @@ class PostUrlsTests(TestCase):
         cls.group = mixer.blend('posts.Group')
         cls.post = mixer.blend(
             'posts.Post',
-            author=cls.user_author,
         )
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
         cls.authorized_client_author = Client()
-        cls.authorized_client_author.force_login(cls.user_author)
+        cls.authorized_client_author.force_login(cls.post.author)
         cls.urls = {
             'comment': reverse(
                 'posts:add_comment',
@@ -29,16 +28,19 @@ class PostUrlsTests(TestCase):
             ),
             'create_post': reverse('posts:post_create'),
             'edit_post': reverse(
-                'posts:post_edit', kwargs={'pk': cls.post.pk}
+                'posts:post_edit',
+                kwargs={'pk': cls.post.pk},
             ),
             'follow': reverse('posts:follow_index'),
             'group_list': reverse(
-                'posts:page_post', kwargs={'slug': cls.group.slug}
+                'posts:page_post',
+                kwargs={'slug': cls.group.slug},
             ),
             'index': reverse('posts:h_page'),
             'missing': '/unexisting_page/',
             'post_detail': reverse(
-                'posts:post_detail', kwargs={'pk': cls.post.pk}
+                'posts:post_detail',
+                kwargs={'pk': cls.post.pk},
             ),
             'profile': reverse('posts:profile', kwargs={'username': cls.user}),
             'profile_follow': reverse(
@@ -105,13 +107,13 @@ class PostUrlsTests(TestCase):
             ),
             (self.urls.get('comment'), HTTPStatus.FOUND, self.client),
         )
-        for address_url, status_code, status_client in httpstatuses:
+        for address_url, status_code, client in httpstatuses:
             with self.subTest(
                 address_url=address_url,
                 status_code=status_code,
             ):
                 self.assertEqual(
-                    status_client.get(address_url).status_code,
+                    client.get(address_url).status_code,
                     status_code,
                     f'страница {address_url} недоступна',
                 )
